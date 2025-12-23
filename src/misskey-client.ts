@@ -1,22 +1,58 @@
 import { requestUrl, RequestUrlParam } from 'obsidian';
 
+export interface MisskeyUser {
+    id: string;
+    name: string;
+    username: string;
+    host: string | null;
+    avatarUrl: string;
+    isBot: boolean;
+    isCat: boolean;
+    emojis: { name: string; url: string }[];
+    onlineStatus: string;
+}
+
+export interface MisskeyFolder {
+    id: string;
+    name: string;
+    parentId: string | null;
+    foldersCount: number;
+    filesCount: number;
+}
+
+export interface MisskeyFile {
+    id: string;
+    createdAt: string;
+    name: string;
+    type: string;
+    md5: string;
+    size: number;
+    isSensitive: boolean;
+    blurhash: string | null;
+    properties: {
+        width: number;
+        height: number;
+    };
+    url: string;
+    thumbnailUrl: string;
+    comment: string | null;
+    folderId: string | null;
+    folder: MisskeyFolder | null;
+    userId: string | null;
+    user: MisskeyUser | null;
+}
+
 export interface MisskeyNote {
     id: string;
     createdAt: string;
     userId: string;
-    user: {
-        id: string;
-        name: string;
-        username: string;
-        host: string | null;
-        avatarUrl: string;
-    };
+    user: MisskeyUser;
     text: string | null;
     cw: string | null;
     visibility: 'public' | 'home' | 'followers' | 'specified';
     renoteId: string | null;
     renote?: MisskeyNote;
-    files: any[];
+    files: MisskeyFile[];
 }
 
 export class MisskeyClient {
@@ -61,7 +97,7 @@ export class MisskeyClient {
         }
     }
 
-    async getMyUser(): Promise<any> {
+    async getMyUser(): Promise<MisskeyUser> {
         const url = `${this.instanceUrl}/api/i`;
         const params: RequestUrlParam = {
             url: url,
@@ -71,6 +107,6 @@ export class MisskeyClient {
         };
 
         const response = await requestUrl(params);
-        return response.json;
+        return response.json as MisskeyUser;
     }
 }

@@ -13,7 +13,7 @@ export default class MisskeyDailyNotePlugin extends Plugin {
 			id: 'sync-misskey-notes',
 			name: 'Misskeyの投稿を同期',
 			callback: async () => {
-				new Notice('Syncing Misskey notes...');
+				new Notice('Misskeyの投稿を同期中...');
 				try {
 					const client = new MisskeyClient(this.settings.instanceUrl, this.settings.accessToken);
 					const noteManager = new NoteManager(this.app, this.settings);
@@ -31,7 +31,7 @@ export default class MisskeyDailyNotePlugin extends Plugin {
 					new Notice(`Misskeyの投稿を同期しました。${count}件`);
 				} catch (error) {
 					console.error(error);
-					new Notice(`Misskey Sync Failed: ${(error as Error).message}`);
+					new Notice(`Misskeyの同期に失敗しました: ${(error as Error).message}`);
 				}
 			}
 		});

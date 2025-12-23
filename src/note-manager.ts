@@ -55,7 +55,7 @@ export class NoteManager {
 
     async appendNotes(file: TFile, notes: MisskeyNote[]) {
         const content = await this.app.vault.read(file);
-        const existingContent = content.split('\n');
+
 
         const newLines: string[] = [];
 
