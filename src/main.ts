@@ -13,30 +13,47 @@ export default class MisskeyDailyNotePlugin extends Plugin {
 			id: 'sync-misskey-notes',
 			name: 'Misskeyの投稿を同期',
 			callback: async () => {
-				new Notice('Misskeyの投稿を同期中...');
-				try {
-					const client = new MisskeyClient(this.settings.instanceUrl, this.settings.accessToken);
-					const noteManager = new NoteManager(this.app, this.settings);
-
-					const me = await client.getMyUser();
-
-					const todayStart = new Date();
-					todayStart.setHours(0, 0, 0, 0);
-
-					const notes = await client.fetchNotes(me.id, undefined, 100, todayStart.getTime());
-
-					const dailyNote = await noteManager.getDailyNote();
-					const count = await noteManager.appendNotes(dailyNote, notes);
-
-					new Notice(`Misskeyの投稿を同期しました。${count}件`);
-				} catch (error) {
-					console.error(error);
-					new Notice(`Misskeyの同期に失敗しました: ${(error as Error).message}`);
-				}
+				await this.syncMisskeyNotes(false);
 			}
 		});
 
 		this.addSettingTab(new MisskeyDailyNoteSettingTab(this.app, this));
+
+		if (this.settings.autoSyncInterval > 0) {
+			this.registerInterval(window.setInterval(
+				() => { void this.syncMisskeyNotes(true); },
+				this.settings.autoSyncInterval * 60 * 1000
+			));
+		}
+	}
+
+	async syncMisskeyNotes(silent: boolean) {
+		if (!silent) {
+			new Notice('Misskeyの投稿を同期中...');
+		}
+		try {
+			const client = new MisskeyClient(this.settings.instanceUrl, this.settings.accessToken);
+			const noteManager = new NoteManager(this.app, this.settings);
+
+			const me = await client.getMyUser();
+
+			const todayStart = new Date();
+			todayStart.setHours(0, 0, 0, 0);
+
+			const notes = await client.fetchNotes(me.id, undefined, 100, todayStart.getTime());
+
+			const dailyNote = await noteManager.getDailyNote();
+			const count = await noteManager.appendNotes(dailyNote, notes);
+
+			if (!silent) {
+				new Notice(`Misskeyの投稿を同期しました。${count}件`);
+			} else if (count > 0) {
+				console.debug(`Misskeyの投稿を同期しました。${count}件`);
+			}
+		} catch (error) {
+			console.error(error);
+			new Notice(`Misskeyの同期に失敗しました: ${(error as Error).message}`);
+		}
 	}
 
 	onunload() {

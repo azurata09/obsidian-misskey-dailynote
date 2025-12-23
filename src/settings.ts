@@ -5,12 +5,14 @@ export interface MisskeyDailyNoteSettings {
 	instanceUrl: string;
 	accessToken: string;
 	dailyNoteFolder: string;
+	autoSyncInterval: number;
 }
 
 export const DEFAULT_SETTINGS: MisskeyDailyNoteSettings = {
 	instanceUrl: 'https://misskey.io',
 	accessToken: '',
-	dailyNoteFolder: '/'
+	dailyNoteFolder: '/',
+	autoSyncInterval: 0
 }
 
 export class MisskeyDailyNoteSettingTab extends PluginSettingTab {
@@ -57,6 +59,21 @@ export class MisskeyDailyNoteSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.dailyNoteFolder = value;
 					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('自動同期の間隔 (分)')
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc('自動的にMisskeyの投稿を同期する間隔を設定します（0で無効化）。変更を反映するにはObsidianを再読み込みしてください。')
+			.addText(text => text
+				.setPlaceholder('0')
+				.setValue(String(this.plugin.settings.autoSyncInterval))
+				.onChange(async (value) => {
+					const num = Number(value);
+					if (!isNaN(num) && num >= 0) {
+						this.plugin.settings.autoSyncInterval = num;
+						await this.plugin.saveSettings();
+					}
 				}));
 	}
 }
